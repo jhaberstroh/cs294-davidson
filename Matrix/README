@@ -1,0 +1,20 @@
+
+LargeMatrix Class
+================================
+
+All parts of this module live in namespace Mtx
+
+Class:
+	Member Function --
+		Description
+
+
+LargeMatrix:
+	ctor LargeMatrix(string filename, enum iostate, int num_in_memory)
+		Creates a LargeMatrix object by specifying the location of a file and declaring how many numbers to store in memory at a time.
+
+	static int EstimateMaxSize(int num_rows)
+		Returns the max size (in MB) of a matrix with the given number of rows
+	static void GenerateRandom(string filename, int num_rows)
+		Generates a random matrix of the given size, primarily for testing
+
