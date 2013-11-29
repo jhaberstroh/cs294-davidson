@@ -1,6 +1,10 @@
 
 LargeMatrix Class
 ================================
+Library dependencies:
+	C++ Standard library, std==c++0x
+	Boost Filesystem & System, version 1.50
+
 
 All parts of this module live in namespace Mtx
 

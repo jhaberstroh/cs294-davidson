@@ -16,7 +16,7 @@ endif
 CFLAGS := -O3
 CFLAGS += $(patsubst %, -I%, $(VPATH))
 # CFLAGS += -I. -I$(HOME)/../Writers -I$(HOME)/../timer -I$(HOME)/../RectArray -I$(HOME)/../fftTools -I$(HOME)/../Hockney -DDIM=$(DIM)
-LIBS:= -lconfig++
+LIBS:= -lconfig++ -lboost_system -lboost_filesystem -lgsl -lgslcblas -lm
 
 
 #CXXNew = /Users/colella/Desktop/gcc-4.7-bin/usr/local/bin/g++ 
