@@ -1,5 +1,6 @@
 #include "LargeMatrix.H"
 #include "Real.H"
+#include "CH_Timer.H"
 #include <boost/filesystem.hpp>
 #include <gsl/gsl_rng.h>
 #include <iostream>

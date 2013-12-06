@@ -1,7 +1,7 @@
 #our makefile variables.   Good to place commonly changed variables
 # at the top of your makefile. Then follow with your rules.
 HOME = ..
-VPATH= . $HOME/lib/timer
+VPATH= . $(HOME) $(HOME)/lib/timer
 # DIM=2
 # osuffix:=$(DIM)D.o
 # dsuffix:=$(DIM)D.d
@@ -22,7 +22,7 @@ LIBS:= -lconfig++ -lboost_system -lboost_filesystem -lgsl -lgslcblas -lm
 #CXXNew = /Users/colella/Desktop/gcc-4.7-bin/usr/local/bin/g++ 
 CXX=g++
 
-SRCFILES:= $(wildcard ./*.cpp)
+SRCFILES:= $(wildcard $(patsubst %, %/*.cpp, $(VPATH)))
 #SRCFILES += $(HOME)/../Hockney/Hockney.cpp
 #SRCFILES:= $(wildcard ../RectArray/*.cpp ../../Writers/*.cpp)
 OBJS:=$(patsubst %.cpp,%.o, $(SRCFILES)) 

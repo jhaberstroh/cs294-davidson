@@ -4,6 +4,8 @@ LargeMatrix Class
 Library dependencies:
 	C++ Standard library, std==c++0x
 	Boost Filesystem & System, version 1.50
+	libgsl, libgslcblas (part of libgsl), and libm, for generating random numbers
+	libconfig++, library for creating configuration files
 
 
 All parts of this module live in namespace Mtx
