@@ -61,12 +61,15 @@ void LargeMatrix::GenerateRandom(std::string a_filename, int a_num_rows, int a_i
 
 colVect LargeMatrix::operator*(colVect col)
 	{
+		CH_TIMERS("Multiplication");
+		CH_TIMER("mult_file", t1);
 		colVect dot(col.size(), 0);
 		assert(col.size() == m_num_rows);
 
 		std::ifstream mtx_file;
+		CH_START(t1);
 		mtx_file.open(m_filename.c_str());
-		std::cout << "MATRIX LOADING: " << std::endl;
+		//std::cout << "MATRIX LOADING: " << std::endl;
 		std::stringstream ss;
 		for (int i = 0 ; i < m_num_rows ; i++)
 			{
@@ -83,13 +86,14 @@ colVect LargeMatrix::operator*(colVect col)
 				for (int j = 0 ; j < m_num_rows ; j++)
 					{
 						ss >> row[j];
-						std::cout << row[j] << "  \t";
+						//std::cout << row[j] << "  \t";
 						ss.ignore(256,',');
 					}
-				std::cout << std::endl;
+				//std::cout << std::endl;
 				
 				dot[i] = row*col;
 			}
+		CH_STOP(t1);
 		return dot;
 	}
 

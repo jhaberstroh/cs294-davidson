@@ -6,6 +6,7 @@ Library dependencies:
 	Boost Filesystem & System, version 1.50
 	libgsl, libgslcblas (part of libgsl), and libm, for generating random numbers
 	libconfig++, library for creating configuration files
+	CH_Timer, included in /lib directory. Must set "export CH_TIMER=anything" to activate timer
 
 
 All parts of this module live in namespace Mtx
