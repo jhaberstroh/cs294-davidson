@@ -1,7 +1,7 @@
 #our makefile variables.   Good to place commonly changed variables
 # at the top of your makefile. Then follow with your rules.
-HOME = .
-VPATH= . ../
+HOME = ..
+VPATH= . $HOME/lib/timer
 # DIM=2
 # osuffix:=$(DIM)D.o
 # dsuffix:=$(DIM)D.d
