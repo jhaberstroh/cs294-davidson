@@ -64,13 +64,26 @@ for l in arrayofeverything:
 
 # Prints the upper 10x10 square of a giant ass matrix
 # I have no idea how to store the matrix in memory.
-for i in range(0,10):
-	for j in range(0,10):
-		print matrix[i,j],
-		print '\t',
-		if(matrix[i,j]==0.0): print '\t',
-	print '\n'
+file_out = "matx_out_test.dat"
+print type(matrix[0,0])
 
+with open(file_out,'wb') as f2:
+	for i in xrange(0,N):
+		for j in xrange(0,N):
+			f2.write(matrix[i,j])
+		f2.write('\n')
+
+
+
+
+
+#	for i in range(0,10):
+#		for j in range(0,10):
+#			print matrix[i,j],
+#			print '\t',
+#			if(matrix[i,j]==0.0): print '\t',
+#		print '\n'
+#
 
 
 
