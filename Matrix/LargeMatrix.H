@@ -5,6 +5,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#define USE_BINARY_FILE
 
 namespace Mtx
 {

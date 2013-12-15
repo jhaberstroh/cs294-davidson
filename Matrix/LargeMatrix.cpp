@@ -61,6 +61,72 @@ void LargeMatrix::GenerateRandom(std::string a_filename, int a_num_rows, int a_i
 
 colVect LargeMatrix::operator*(colVect col)
 	{
+#ifdef USE_BINARY_FILE
+		CH_TIMERS("Multiplication");
+		CH_TIMER("file_read", t1);
+		CH_TIMER("line_splice", t2);
+		CH_TIMER("vec_multiply", t3);
+		colVect dot(col.size(), 0);
+		assert(col.size() == m_num_rows);
+		std::cout << "PERFORMING MULTIPLICATION!" << std::endl;
+
+		std::ifstream mtx_file;
+		mtx_file.open(m_filename.c_str(), std::ifstream::binary);
+		//std::cout << "MATRIX LOADING: " << std::endl;
+
+		int Nchar_double = 8;
+		assert(m_num_rows = 25*25);
+		int line_size = m_num_rows * Nchar_double;
+		char buffer[line_size + 1];
+		for (int i = 0 ; i < m_num_rows ; i++)
+			{
+				assert(mtx_file.is_open());
+				CH_START(t1);
+
+				rowVect row(m_num_rows,0);
+				mtx_file.read(buffer, line_size + 1);
+				if (!mtx_file)
+					{
+						mtx_file.close();
+						std::cout << "FATAL ERROR: could not read line from file" << std::endl;
+						abort();
+					}
+				assert(buffer[line_size] == '\n');
+				CH_STOP(t1);
+
+				CH_START(t2);
+				std::string remain;
+				for (int j = 0 ; j < m_num_rows ; j++)
+					{
+						int displace = Nchar_double * j;
+
+						//assert(displace + Nchar_double  < line_size);
+						
+						row[j] = *(Real*) (buffer + Nchar_double * j);
+						if (i == 0)
+							{
+								if (j != 0)
+									{
+										std::cout << ",";
+									}
+								std::cout << row[j] ;
+							}
+					}
+				if (i == 0)
+					{
+						std::cout << std::endl;
+					}
+				CH_STOP(t2);
+				
+				CH_START(t3);
+				dot[i] = row*col;
+				CH_STOP(t3);
+			}
+		mtx_file.close();
+		return dot;
+#endif
+
+#ifndef USE_BINARY_FILE
 		CH_TIMERS("Multiplication");
 		CH_TIMER("mult_file", t1);
 		colVect dot(col.size(), 0);
@@ -94,7 +160,9 @@ colVect LargeMatrix::operator*(colVect col)
 				dot[i] = row*col;
 			}
 		CH_STOP(t1);
+		mtx_file.close();
 		return dot;
+#endif
 	}
 
 }
