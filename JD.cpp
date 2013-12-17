@@ -45,8 +45,8 @@ int main(){
     double tmag;
 
     //initialize the random matrix to substitute for an electronic structure Hamiltonian
-    srand (time(NULL));
-    //srand(12345);
+    //srand (time(NULL));
+    srand(12345);
     for(i=0; i<N; i++){
         for(j=0; j<N; j++){
             A[i][j] = rand() % 1000;
@@ -62,19 +62,24 @@ int main(){
     }
     
     //(1)
-    //initialize the random eigenvector guess
+    //initialize the random normalized eigenvector guess
     for(i=0; i<N; i++) {
         t[i] = rand() % 1000;
         //v[i][0] = t[i];
     }
+    tmag = 0;
+    for(j=0; j<N; j++) tmag += t[j] * t[j];
+    tmag = sqrt(tmag);
+    for(j=0;j<N;j++) t[j] = t[j] / tmag;
     
     cout << "Our random guess for the eigenvector: ";
     for(i=0;i<N;i++) cout << t[i] << " ";
     cout << endl;
     
-    //iteration the whole process
-    int maxIter = 10000;
+    //iterate the whole process
+    int maxIter = 1;
     for(int iter = 0; iter<maxIter; iter++){
+        //reset the list of guesses, v, and the matrix M to zero at the beginning of each iteration
         for(i=0;i<N;i++){
             for(j=0;j<N;j++){
                 M[i][j] = 0;
@@ -83,31 +88,36 @@ int main(){
         }
         //cout << "iter: " << iter << endl;
         //(2)
-        for(int m=1; m<N; m++){
+        for(int m=1; m<=N; m++){
+            cout << "t: ";
+            for(i=0;i<N;i++) cout << t[i] << " ";
+            cout << endl;
+            for(j=0; j<N; j++) v[j][m-1] = t[j];
             //(3) - orthogonalization
             for(i=1; i<m; i++){
                 //(4)
                 double vt = 0;
                 for(j=0; j<N; j++) vt += v[j][i-1] * t[j];
-                for(j=0; j<N; j++) t[j] -= vt * v[j][i-1];
+                cout << "vt: " << vt << endl;
+                for(j=0; j<N; j++) v[j][m-1] -= vt * v[j][i-1];
             }//(5)
             //normalization
             tmag = 0;
-            for(j=0; j<N; j++) tmag += t[j] * t[j];
+            for(j=0; j<N; j++) tmag += v[j][m-1] * v[j][m-1];
             tmag = sqrt(tmag);
-            for(j=0;j<N;j++) t[j] = t[j] / tmag;
-            //(6)
+            for(j=0;j<N;j++) v[j][m-1] = v[j][m-1] / tmag;
+           
             cout << "orthonormalized t: ";
-            for(i=0;i<N;i++) cout << t[i] << " ";
+            for(i=0;i<N;i++) cout << v[i][m-1] << " ";
             cout << endl;
             
-;
+
             if(tmag == 0){
                 cout << "Your eigenvector guess is the null vector.";
                 abort();
             }
+             //(6)
             
-            for(j=0; j<N; j++) v[j][m-1] = t[j];
             
             //check the new vector
             cout << "v's\n";
