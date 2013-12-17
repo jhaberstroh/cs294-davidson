@@ -11,9 +11,10 @@
 namespace Mtx
 {
 
-LargeMatrix::LargeMatrix(std::string a_filename, int a_num_rows, int a_iostate, int a_nums_in_memory)
+LargeMatrix::LargeMatrix(std::string a_filename, int a_num_rows, Format a_fmt, int a_iostate, int a_nums_in_memory)
 	{
 		m_filename = a_filename;
+		m_fmt = a_fmt;
 		m_iostate = a_iostate;
 		m_num_rows = a_num_rows;
 		assert(m_iostate | FRead);
@@ -59,21 +60,18 @@ void LargeMatrix::GenerateRandom(std::string a_filename, int a_num_rows, int a_i
 		gsl_rng_free(r);
 	}
 
-colVect LargeMatrix::operator*(colVect col)
+void LargeMatrix::BinMult(colVect& output, const colVect& arg)
 	{
-#ifdef USE_BINARY_FILE
 		CH_TIMERS("Multiplication");
 		CH_TIMER("file_read", t1);
 		CH_TIMER("line_splice", t2);
 		CH_TIMER("vec_multiply", t3);
-		colVect dot(col.size(), 0);
-		assert(col.size() == m_num_rows);
 		std::cout << "PERFORMING MULTIPLICATION!" << std::endl;
-
+	
 		std::ifstream mtx_file;
 		mtx_file.open(m_filename.c_str(), std::ifstream::binary);
 		//std::cout << "MATRIX LOADING: " << std::endl;
-
+	
 		int Nchar_double = 8;
 		assert(m_num_rows = 25*25);
 		int line_size = m_num_rows * Nchar_double;
@@ -82,7 +80,7 @@ colVect LargeMatrix::operator*(colVect col)
 			{
 				assert(mtx_file.is_open());
 				CH_START(t1);
-
+	
 				rowVect row(m_num_rows,0);
 				mtx_file.read(buffer, line_size + 1);
 				if (!mtx_file)
@@ -93,24 +91,23 @@ colVect LargeMatrix::operator*(colVect col)
 					}
 				assert(buffer[line_size] == '\n');
 				CH_STOP(t1);
-
+	
 				CH_START(t2);
-				std::string remain;
 				for (int j = 0 ; j < m_num_rows ; j++)
 					{
 						int displace = Nchar_double * j;
-
+	
 						//assert(displace + Nchar_double  < line_size);
 						
 						row[j] = *(Real*) (buffer + Nchar_double * j);
-						if (i == 0)
-							{
-								if (j != 0)
-									{
-										std::cout << ",";
-									}
-								std::cout << row[j] ;
-							}
+						//if (i == 0)
+						//	{
+						//		if (j != 0)
+						//			{
+						//				std::cout << ",";
+						//			}
+						//		std::cout << row[j] ;
+						//	}
 					}
 				if (i == 0)
 					{
@@ -119,18 +116,19 @@ colVect LargeMatrix::operator*(colVect col)
 				CH_STOP(t2);
 				
 				CH_START(t3);
-				dot[i] = row*col;
+				output[i] = row*arg;
 				CH_STOP(t3);
 			}
 		mtx_file.close();
-		return dot;
-#endif
+	}
 
-#ifndef USE_BINARY_FILE
+
+
+void LargeMatrix::TxtMult(colVect& output, const colVect& arg)
+	{
+
 		CH_TIMERS("Multiplication");
 		CH_TIMER("mult_file", t1);
-		colVect dot(col.size(), 0);
-		assert(col.size() == m_num_rows);
 
 		std::ifstream mtx_file;
 		CH_START(t1);
@@ -157,12 +155,27 @@ colVect LargeMatrix::operator*(colVect col)
 					}
 				//std::cout << std::endl;
 				
-				dot[i] = row*col;
+				output[i] = row*arg;
 			}
 		CH_STOP(t1);
 		mtx_file.close();
-		return dot;
-#endif
 	}
 
-}
+colVect LargeMatrix::operator*(colVect arg)
+	{
+		assert(arg.size() == m_num_rows);
+		colVect dot(arg.size(), 0);
+
+		if (m_fmt == FMT_BIN)
+			{
+				BinMult(dot, arg);
+			}
+		if (m_fmt == FMT_TXT)
+			{
+				TxtMult(dot, arg);
+			}
+		return dot;
+	}
+
+
+} //namespace Mtx 
