@@ -3,6 +3,7 @@
 #include "CH_Timer.H"
 #include <boost/filesystem.hpp>
 #include <gsl/gsl_rng.h>
+#include <cblas.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -141,18 +142,6 @@ void LargeMatrix::BinMult(colVect& output, const colVect& arg)
 						//assert(displace + Nchar_double  < line_size);
 						
 						row[j] = *(Real*) (buffer + Nchar_double * j);
-						//if (i == 0)
-						//	{
-						//		if (j != 0)
-						//			{
-						//				std::cout << ",";
-						//			}
-						//		std::cout << row[j] ;
-						//	}
-					}
-				if (i == 0)
-					{
-						//std::cout << std::endl;
 					}
 				CH_STOP(t2);
 				
@@ -171,11 +160,30 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 		CH_TIMER("line_splice", t2);
 		CH_TIMER("vec_multiply", t3);
 		//std::cout << "PERFORMING MULTIPLICATION!" << std::endl;
-	
+
+
 		std::ifstream mtx_file;
 		mtx_file.open(m_filename.c_str(), std::ifstream::binary);
 		//std::cout << "MATRIX LOADING: " << std::endl;
 	
+		char header_buffer[19];
+		mtx_file.read(header_buffer, 19);
+		if (!mtx_file)
+			{
+				mtx_file.close();
+				std::cout << "FATAL ERROR: could not read line from file" << std::endl;
+				abort();
+			}
+		std::cout << "HEADER:: " << header_buffer << std::endl;
+		unsigned int dat_size = *(int*) (header_buffer + 9);
+		unsigned int num_row = *(int*) (header_buffer + 14);
+
+		std::cout << "Dat Size:: " << dat_size << std::endl;
+		std::cout << "Num rows:: " << num_row << std::endl;
+
+
+
+
 		int max_lines_read = m_nums_in_memory / m_num_rows;
 		//std::cout << "Max nums in memory: " << m_nums_in_memory << std::endl;
 		//std::cout << "Max lines to read: " << max_lines_read << std::endl;
@@ -218,6 +226,7 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 						//		std::cout << "Line "<< lin << " failed to pass newline assertion" << std::endl;
 						//		abort();
 						//	}
+						Real* row_vect = (Real*) (buffer + line_displace);
 						for (int j = 0 ; j < m_num_rows ; j++)
 							{
 								int float_displace = (j * Nchar_double) + line_displace;
@@ -240,6 +249,7 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 						CH_STOP(t2);
 						
 						CH_START(t3);
+						output[i+lin] = cblas_ddot(m_num_rows, row_vect, 0, &*arg.begin(), 0);
 						output[i+lin] = row*arg;
 						CH_STOP(t3);
 					}
@@ -252,13 +262,13 @@ colVect LargeMatrix::operator*(colVect arg)
 		assert(arg.size() == m_num_rows);
 		colVect dot(arg.size(), 0);
 
-		if (m_fmt == FMT_BIN)
-			{
-				BinMult(dot, arg);
-			}
 		if (m_fmt == FMT_TXT)
 			{
 				TxtMult(dot, arg);
+			}
+		if (m_fmt == FMT_BIN)
+			{
+				BinMult(dot, arg);
 			}
 		if (m_fmt == FMT_OPT_TEI)
 			{
