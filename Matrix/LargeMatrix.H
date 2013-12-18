@@ -67,6 +67,8 @@ class LargeMatrix
 
 		void TxtMult(colVect& output, const colVect& in);
 		void BinMult(colVect& output, const colVect& in);
+		void OptMult(colVect& output, const colVect& in);
+
 
 	public: 
 		explicit LargeMatrix(std::string a_filename, int a_num_rows, Format a_fmt = FMT_BIN, int a_iostate = FRead|FWrite, int a_nums_in_memory = 1000000);
