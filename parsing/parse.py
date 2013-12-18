@@ -79,8 +79,8 @@ with open(file_out,'wb') as f2:
 file_out = "matx_out_test.mot"
 with open(file_out,'wb') as f2:
 	f2.write('MOformat_')
-	f2.write(struct.pack('I',matrix.shape[0]));
 	f2.write(struct.pack('I',8));
+	f2.write(struct.pack('I',matrix.shape[0]));
 	f2.write('\n');
 	for i in xrange(0,N):
 		for j in xrange(0,N):

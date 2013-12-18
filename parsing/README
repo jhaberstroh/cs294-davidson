@@ -1,0 +1,50 @@
+PARSING
+=================================
+
+There are three file formats:
+1) .txt -- slowest, raw text
+
+	Header 
+		None
+
+	Format
+		Stores tab-separated rows of float data.
+
+
+2) .dat -- medium, binary data
+
+	Header
+		None
+	
+	Format
+		Stores contiguous 8-byte rows separated by '\n' characters
+
+3a) .moo -- fastest, optimized matrix format, one electon integrals
+
+	Header
+		"MXOformat[1=4B][2=4B]\n"
+		1: length of matrix, max = (2^32 -1) rows
+					~= 4.3 billion rows
+					~= 1.48 Exobyte file (for 8 byte floats)
+		2: number of bytes in floats, 4B for simplicity
+	
+	Format
+		Contiguous (2) bit numbers in sequences of (1) with no line break characters. May become more complex with optimization.
+
+3b) .mot -- fastest, optimized matrix format, two electon integrals
+
+	Header
+		"MOformat_[1=4B]_[2=4B]\n"
+		9B + 4B + 1B + 4B + 1B =  19B	
+		1: length of matrix, max = (2^32 -1) rows
+					~= 4.3 billion rows
+					~= 1.48 Exobyte file (for 8 byte floats)
+		2: number of bytes in floats, 4B for simplicity
+	
+	Format
+		Contiguous (2) bit numbers in sequences of (1) with no line break characters. May become more complex with optimization.
+
+
+
+Format
+		

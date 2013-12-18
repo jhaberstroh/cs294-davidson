@@ -176,7 +176,7 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 			}
 		std::cout << "HEADER:: " << header_buffer << std::endl;
 		unsigned int dat_size = *(int*) (header_buffer + 9);
-		unsigned int num_row = *(int*) (header_buffer + 14);
+		unsigned int num_row = *(int*) (header_buffer + 13);
 
 		std::cout << "Dat Size:: " << dat_size << std::endl;
 		std::cout << "Num rows:: " << num_row << std::endl;

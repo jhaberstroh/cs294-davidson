@@ -24,7 +24,7 @@ void mtxTest(Mtx::Format fmt)
 		if (fmt == Mtx::FMT_OPT_TEI)
 			{
 				rows = 25 * 25;
-				mtx_name = "../parsing/matx_out_test.dat";
+				mtx_name = "../parsing/matx_out_test.mot";
 			}
 		
 	
