@@ -5,8 +5,6 @@ import scipy.sparse.linalg as sla
 import scipy as sp
 import random
 import copy
-from pysparse.itsolvers import krylov
-from pysparse.sparse import spmatrix
 
 
 #	Returns approximate (err, eval, evec, perp) for the m x m submatrix of A
