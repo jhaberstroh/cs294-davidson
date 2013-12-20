@@ -1,0 +1,12 @@
+Scaling of speeds with various max-read limits
+
+Tested on 625x625 matrix in opimized format
+
+Num in memory
+	time for 100 multiplication (s)
+1000	0.24071
+3000	0.18128
+10000	0.18609
+30000	0.17106
+100000	0.16882
+300000	0.33812
