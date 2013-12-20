@@ -142,6 +142,11 @@ void LargeMatrix::BinMult(colVect& output, const colVect& arg)
 						//assert(displace + Nchar_double  < line_size);
 						
 						row[j] = *(Real*) (buffer + Nchar_double * j);
+						if (i == m_num_rows-1 and j == m_num_rows-1)
+						{
+							std::cout << row[j] << std::endl;
+							std::cout << Nchar_double * j << std::endl;
+						}
 					}
 				CH_STOP(t2);
 				
@@ -166,8 +171,8 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 		mtx_file.open(m_filename.c_str(), std::ifstream::binary);
 		//std::cout << "MATRIX LOADING: " << std::endl;
 	
-		char header_buffer[19];
-		mtx_file.read(header_buffer, 19);
+		char header_buffer[18];
+		mtx_file.read(header_buffer, 18);
 		if (!mtx_file)
 			{
 				mtx_file.close();
@@ -181,6 +186,10 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 		std::cout << "Dat Size:: " << dat_size << std::endl;
 		std::cout << "Num rows:: " << num_row << std::endl;
 
+		assert(m_num_rows == num_row);
+		int Nchar_double = 8;
+		assert(Nchar_double == dat_size);
+		assert(sizeof(Real) == dat_size);
 
 
 
@@ -188,12 +197,10 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 		//std::cout << "Max nums in memory: " << m_nums_in_memory << std::endl;
 		//std::cout << "Max lines to read: " << max_lines_read << std::endl;
 
-		int Nchar_double = 8;
-		assert(m_num_rows = 25*25);
-		int line_size = m_num_rows * Nchar_double;
+		int line_size_char = m_num_rows * Nchar_double;
 
 
-		char buffer[ (line_size + 1) * max_lines_read];
+		char buffer[ line_size_char * max_lines_read];
 		for (int i = 0 ; i < m_num_rows ; i+=max_lines_read)
 			{
 				CH_START(t0);
@@ -202,12 +209,12 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 				
 				CH_START(t1);
 				int num_lines_to_read = std::min(max_lines_read, m_num_rows - i);
-				int num_bytes_to_read = (line_size + 1) * num_lines_to_read;
+				int num_bytes_to_read = line_size_char * num_lines_to_read;
 
-				//std::cout << "Reading " << num_lines_to_read << " lines.\n Buffer call to read " << num_bytes_to_read << " Bytes." << std::endl;
+				std::cout << "Reading " << num_lines_to_read << " lines.\n Buffer call to read " << num_bytes_to_read << " Bytes." << std::endl;
 	
 				rowVect row(m_num_rows,0);
-				mtx_file.read(buffer, (line_size + 1) * num_lines_to_read);
+				mtx_file.read(buffer,  num_bytes_to_read);
 				if (!mtx_file)
 					{
 						mtx_file.close();
@@ -216,41 +223,28 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 					}
 				CH_STOP(t1);
 	
-				for (int lin = 0 ; lin < num_lines_to_read ; lin++)
+				for (int n_line = 0 ; n_line < num_lines_to_read ; n_line++)
 					{
 						CH_START(t2);
-						int line_displace = lin * (line_size + 1);
-						assert(buffer[line_displace + line_size] == '\n');
-						//if (buffer[line_displace + line_size] != '\n')
-						//	{
-						//		std::cout << "Line "<< lin << " failed to pass newline assertion" << std::endl;
-						//		abort();
-						//	}
+						int line_displace = n_line * line_size_char;
 						Real* row_vect = (Real*) (buffer + line_displace);
 						for (int j = 0 ; j < m_num_rows ; j++)
 							{
 								int float_displace = (j * Nchar_double) + line_displace;
 	
-								//assert(displace + Nchar_double  < line_size);
+								//assert(displace + Nchar_double  < line_size_char);
 								row[j] = *(Real*) (buffer + float_displace);
-								//if (i == 0)
-								//	{
-								//		if (j != 0)
-								//			{
-								//				std::cout << ",";
-								//			}
-								//		std::cout << row[j] ;
-								//	}
-							}
-						if (i == 0)
-							{
-								//std::cout << std::endl;
+								if (n_line == num_lines_to_read-1 and j == m_num_rows-1)
+								{
+									std::cout << row[j] << std::endl;
+									std::cout << float_displace << std::endl;
+								}
 							}
 						CH_STOP(t2);
 						
 						CH_START(t3);
-						output[i+lin] = cblas_ddot(m_num_rows, row_vect, 0, &*arg.begin(), 0);
-						output[i+lin] = row*arg;
+						output[i+n_line] = cblas_ddot(m_num_rows, row_vect, 0, &*arg.begin(), 0);
+						output[i+n_line] = row*arg;
 						CH_STOP(t3);
 					}
 			}

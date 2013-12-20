@@ -89,8 +89,7 @@ with open(file_out,'wb') as f2:
 
 file_out = "test_bin.bin"
 with open(file_out,'wb') as f2:
-	f2.write(struct.pack('I',65535))
-	f2.write(struct.pack('f',3.14159))
+	f2.write(struct.pack('d',3.14159))
 
 
 #	for i in range(0,10):

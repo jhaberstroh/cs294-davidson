@@ -1,6 +1,8 @@
 #include "Real.H"
 #include "LargeMatrix.H"
 #include "CH_Timer.H"
+#include <fstream>
+#include <iostream>
 
 void mtxTest(Mtx::Format fmt)
 	{
@@ -40,7 +42,7 @@ void mtxTest(Mtx::Format fmt)
 	
 		Mtx::colVect b(a);
 		std::cout << "B size: " << b.size() << std::endl;
-		for (int i = 0 ; i < 100 ; i++)
+		for (int i = 0 ; i < 5 ; i++)
 			{
 				b = x*b;
 			}
@@ -59,4 +61,15 @@ int main()
 		CH_START(t2);
 		mtxTest(Mtx::FMT_OPT_TEI);
 		CH_STOP(t2);
+
+
+		std::ifstream test_file;
+		test_file.open("../parsing/test_bin.bin", std::ifstream::binary);
+		char buffer[8];
+		test_file.read(buffer,8);
+		std::cout << "The value of pi is "<<*(Real*)buffer <<std::endl;
+		test_file.close();
+
+
+
 	}
