@@ -78,7 +78,7 @@ def JDRound(A,v0, maxM=0, verbose = False):
 		print v0
 	err = 1
 	tol = 1e-5
-	m = 2
+	m = 1
 	 
 	perp = np.zeros((n,1))
 	for i in xrange(n):
@@ -89,16 +89,17 @@ def JDRound(A,v0, maxM=0, verbose = False):
 	if maxM == 0:
 		maxM = n
 	while err > tol and m <= maxM:
+		m += 1
 		err, lam, v0, perp, vm = JDLoop(A,m,perp,V, tol)
 		V = np.append(V,vm,1)
 		if verbose:
 			print "Guess",m,", error,",err,":::"
 			print v0
-		m += 1
 	print "Largest eigenvalue: ", lam
 	if verbose:
 		print "\tCorresponding evec: ", v0
 	print "Final error: ", err
+	print "\t Number of iterations: ", m
 	return err, lam, v0
 	
 
@@ -143,9 +144,9 @@ def main():
 	#JDRoutine(MT, 3, 10, False)
 	
 	
-	print "\n\n\n\n\n\n\nRandom large matrix:\n\n\n\n\n\n\n"
+	print "\nRandom large matrix:\n"
 	random.seed(90210)
-	N = 25
+	N = 1000
 	MT = np.zeros((N,N))
 	for i in xrange(200):
 		pos1 = random.randint(0,N-1)
@@ -153,7 +154,7 @@ def main():
 		num = random.uniform(-1,1)
 		MT[pos1,pos2] = num
 		MT[pos2,pos1] = num
-	JDRoutine(MT, 4, 5, False)
+	JDRoutine(MT, 40, 5, False)
 
 	
 if __name__ == "__main__":
