@@ -30,7 +30,7 @@ void mtxTest(Mtx::Format fmt)
 			}
 		
 	
-		Mtx::LargeMatrix x(mtx_name, rows, fmt);
+		Mtx::LargeMatrix x(mtx_name, rows, fmt, Mtx::FRead|Mtx::FWrite, 100000);
 		Mtx::colVect a(rows, 0);
 		std::cout << "A size: " << a.size() << std::endl;
 		for (int i = 0 ; i < a.size() ; i++)
@@ -42,7 +42,7 @@ void mtxTest(Mtx::Format fmt)
 	
 		Mtx::colVect b(a);
 		std::cout << "B size: " << b.size() << std::endl;
-		for (int i = 0 ; i < 5 ; i++)
+		for (int i = 0 ; i < 100 ; i++)
 			{
 				b = x*b;
 			}

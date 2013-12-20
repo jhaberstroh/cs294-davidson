@@ -135,6 +135,7 @@ void LargeMatrix::BinMult(colVect& output, const colVect& arg)
 				CH_STOP(t1);
 	
 				CH_START(t2);
+				Real * row_vect = (Real*) buffer;
 				for (int j = 0 ; j < m_num_rows ; j++)
 					{
 						int displace = Nchar_double * j;
@@ -142,16 +143,22 @@ void LargeMatrix::BinMult(colVect& output, const colVect& arg)
 						//assert(displace + Nchar_double  < line_size);
 						
 						row[j] = *(Real*) (buffer + Nchar_double * j);
-						if (i == m_num_rows-1 and j == m_num_rows-1)
-						{
-							std::cout << row[j] << std::endl;
-							std::cout << Nchar_double * j << std::endl;
-						}
+						//if (i == m_num_rows-1 and j == m_num_rows-1)
+						//{
+						//	std::cout << row[j] << std::endl;
+						//	std::cout << Nchar_double * j << std::endl;
+						//}
 					}
 				CH_STOP(t2);
 				
 				CH_START(t3);
-				output[i] = row*arg;
+				for (int q = 0 ; q < arg.size() ; q++)
+					{
+						//std::cout << "row["<<q<<"] vs row_vect["<<q<<"]:" <<row[q] << " VS "<<row_vect[q] << std::endl;
+						assert(row[q] == row_vect[q]);
+					}
+				output[i] = cblas_ddot(m_num_rows, row_vect, 1, &*arg.begin(), 1);
+				//output[i] = row*arg;
 				CH_STOP(t3);
 			}
 		mtx_file.close();
@@ -179,12 +186,12 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 				std::cout << "FATAL ERROR: could not read line from file" << std::endl;
 				abort();
 			}
-		std::cout << "HEADER:: " << header_buffer << std::endl;
+		//std::cout << "HEADER:: " << header_buffer << std::endl;
 		unsigned int dat_size = *(int*) (header_buffer + 9);
 		unsigned int num_row = *(int*) (header_buffer + 13);
 
-		std::cout << "Dat Size:: " << dat_size << std::endl;
-		std::cout << "Num rows:: " << num_row << std::endl;
+		//std::cout << "Dat Size:: " << dat_size << std::endl;
+		//std::cout << "Num rows:: " << num_row << std::endl;
 
 		assert(m_num_rows == num_row);
 		int Nchar_double = 8;
@@ -211,7 +218,7 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 				int num_lines_to_read = std::min(max_lines_read, m_num_rows - i);
 				int num_bytes_to_read = line_size_char * num_lines_to_read;
 
-				std::cout << "Reading " << num_lines_to_read << " lines.\n Buffer call to read " << num_bytes_to_read << " Bytes." << std::endl;
+				//std::cout << "Reading " << num_lines_to_read << " lines.\n Buffer call to read " << num_bytes_to_read << " Bytes." << std::endl;
 	
 				rowVect row(m_num_rows,0);
 				mtx_file.read(buffer,  num_bytes_to_read);
@@ -228,23 +235,22 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 						CH_START(t2);
 						int line_displace = n_line * line_size_char;
 						Real* row_vect = (Real*) (buffer + line_displace);
-						for (int j = 0 ; j < m_num_rows ; j++)
-							{
-								int float_displace = (j * Nchar_double) + line_displace;
+						//for (int j = 0 ; j < m_num_rows ; j++)
+						//	{
+						//		int float_displace = (j * Nchar_double) + line_displace;
 	
-								//assert(displace + Nchar_double  < line_size_char);
-								row[j] = *(Real*) (buffer + float_displace);
-								if (n_line == num_lines_to_read-1 and j == m_num_rows-1)
-								{
-									std::cout << row[j] << std::endl;
-									std::cout << float_displace << std::endl;
-								}
-							}
+						//		//assert(displace + Nchar_double  < line_size_char);
+						//		row[j] = *(Real*) (buffer + float_displace);
+						//		if (n_line == num_lines_to_read-1 and j == m_num_rows-1)
+						//		{
+						//			std::cout << row[j] << std::endl;
+						//			std::cout << float_displace << std::endl;
+						//		}
+						//	}
 						CH_STOP(t2);
 						
 						CH_START(t3);
-						output[i+n_line] = cblas_ddot(m_num_rows, row_vect, 0, &*arg.begin(), 0);
-						output[i+n_line] = row*arg;
+						output[i+n_line] = cblas_ddot(m_num_rows, row_vect, 1, &*arg.begin(), 1);
 						CH_STOP(t3);
 					}
 			}
