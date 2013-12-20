@@ -1,10 +1,10 @@
 //g++ -framework Accelerate JD.cpp
 //Follows the algorithm here: http://web.eecs.utk.edu/~dongarra/etemplates/node138.html
 #include <iostream>
-#include <vector> 
-//#include "Matrix/LargeMatrix.H"
+#include <vector>
 #include <stdlib.h>
 #include <Accelerate/Accelerate.h>
+#include "gmres.h"
 
 #define N 3
 
@@ -45,8 +45,8 @@ int main(){
     double tmag;
 
     //initialize the random matrix to substitute for an electronic structure Hamiltonian
-    srand (time(NULL));
-    //srand(12345);
+    //srand (time(NULL));
+    srand(12345);
     for(i=0; i<N; i++){
         for(j=0; j<N; j++){
             A[i][j] = rand() % 1000;
@@ -69,17 +69,17 @@ int main(){
     }
     
     //iterate the whole process
-    int maxIter = 10000;
+    int maxIter = 1000;
     for(int iter = 0; iter<maxIter; iter++){
         tmag = 0;
         for(j=0; j<N; j++) tmag += t[j] * t[j];
         tmag = sqrt(tmag);
-        for(j=0;j<N;j++) t[j] = t[j] / tmag;
-        tmag = 1;
+        /*for(j=0;j<N;j++) t[j] = t[j] / tmag;
+        tmag = 1;*/
         
-        cout << "Our initial guess for the eigenvector: ";
+        /*cout << "Our initial guess for the eigenvector: ";
         for(i=0;i<N;i++) cout << t[i] << " ";
-        cout << endl;
+        cout << endl;*/
         
         //reset the list of guesses, v, and the matrix M to zero at the beginning of each iteration
         for(i=0;i<N;i++){
@@ -95,48 +95,51 @@ int main(){
             /*cout << "t: ";
             for(i=0;i<N;i++) cout << t[i] << " ";
             cout << endl;*/
-            //for(j=0; j<N; j++) t[j] = rand() % 1000; cout << "v's are set randomly. Testing orthogonalization\n"; This test succeeds
+            //for(j=0; j<N; j++) t[j] = rand() % 1000; cout << "v's are set randomly. Testing orthogonalization\n";
             for(j=0; j<N; j++) v[j][m-1] = t[j];
-            //(3) - orthogonalization
+            //(3) - orthogonalization by Gram-Schmidt
             int a = 0;
             double ratio = 0;
-            while(ratio < 0.25){
+            //while(ratio < 0.25){
+            for(a=0; a<2; a++){
                 if(a > 0) cout << "Repeating Gram-Schmidt\n";
-                cout << "vector before orthogonalization: ";
+                /*cout << "vector before orthogonalization: ";
                 for(i=0; i<N; i++) cout << v[i][m-1] << " ";
-                cout << endl;
+                cout << endl;*/
                 for(i=1; i<m; i++){
+                    //cout << "vector I'm orthogonalizing: "; for(j=0; j<N; j++) cout << v[j][m-1] << " "; cout << endl;
+                    //cout << "vector I'm orthogonalizing to: "; for(j=0; j<N; j++) cout << v[j][i-1] << " "; cout << endl;
+                    double dotProd = 0;
+                    for(j=0; j<N; j++) dotProd += v[j][m-1] * v[j][i-1];
+                    cout << "Dot product before orthogonalization: " << dotProd << endl;
                     //(4)
                     double vt = 0;
                     for(j=0; j<N; j++) vt += v[j][i-1] * t[j];
                     //cout << "vt: " << vt << endl;
                     for(j=0; j<N; j++) v[j][m-1] -= vt * v[j][i-1];
-                    cout << "after orthogonalizing to vector " << i-1 << endl;
-                    for(j=0; j<N; j++) cout << v[j][m-1] << " ";
-                    cout << endl;
+                    //cout << "after orthogonalizing to vector " << i-1 << endl; for(j=0; j<N; j++) cout << v[j][m-1] << " "; cout << endl;
+                    dotProd = 0;
+                    for(j=0; j<N; j++) dotProd += v[j][m-1] * v[j][i-1];
+                    cout << "Dot product after orthogonalization: " << dotProd << endl;
                 }//(5)
                 vmag = 0;
                 for(i=0;i<N;i++) vmag += v[i][m-1] * v[i][m-1];
                 vmag = sqrt(vmag);
-                ratio = vmag / tmag; //repeat orthogonalization one time if the vector gets smaller by more than a factor of 4
-                cout << "ratio: " << ratio << endl;
-                a++;
+                if(vmag <= 10e-10){
+                    cout << "Your eigenvector guess is the null vector.\n";
+                    abort();
+                }
+                ratio = vmag / tmag; //repeat orthogonalization if the vector gets smaller by more than a factor of 4
+                //cout << "ratio: " << ratio << endl;
+                //a++;
                 //normalization
-                vmag = 0;
-                for(j=0; j<N; j++) vmag += v[j][m-1] * v[j][m-1];
-                vmag = sqrt(vmag);
                 for(j=0;j<N;j++) v[j][m-1] = v[j][m-1] / vmag;
                 for(i=0;i<N;i++) t[i] = v[i][m-1];
                 
                 tmag = 0;
                 for(j=0; j<N; j++) tmag += t[j] * t[j];
                 tmag = sqrt(tmag);
-            }
-            
-           
-            if(vmag <= 10e-10){
-                cout << "Your eigenvector guess is the null vector.\n";
-                abort();
+                if(ratio > 0.25) break;
             }
             
             /*cout << "orthonormalized t: ";
@@ -144,13 +147,13 @@ int main(){
             cout << endl;*/
 
             //check the new vector
-            cout << "v's\n";
+            /*cout << "v's\n";
             for(i=0; i<N; i++){
                 for(j=0; j<N; j++){
                     cout << v[i][j] << " ";
                 }
                 cout << endl;
-            }
+            }*/
             
             //(6)
             double vm[N], vAm[N]={0};
@@ -158,13 +161,13 @@ int main(){
             matrixVectorMultiply(A, vm, vAm);
             for(i=0;i<N;i++) vA[i][m-1] = vAm[i];
             
-            cout << "matrix vA\n";
+            /*cout << "matrix vA\n";
             for(i=0;i<N;i++){
                 for(j=0;j<N;j++){
                     cout << vA[i][j] << " ";
                 }
                 cout << endl;
-            }
+            }*/
         
             for(i=1;i<=m;i++){ //(7)
                 for(j=0;j<N;j++){
@@ -173,13 +176,13 @@ int main(){
                 }
             }//(9)
             
-            cout << "matrix M\n";
+            /*cout << "matrix M\n";
             for(i=0;i<N;i++){
                 for(j=0;j<N;j++){
                     cout << M[i][j] << " ";
                 }
                 cout << endl;
-            }
+            }*/
             
             //(10) calculate largest eigenpair of M with LAPACK
             char left = 'N';
@@ -194,14 +197,14 @@ int main(){
             //right eigenvectors are stored in the columns of VR in the same order as the corresponding eigevanlues in WR and WI (real,imaginary)
             dgeev_(&left,&right,&size,M_lapack,&size,WR,WI,VL,&LDVL,VR,&size,WORK,&LWORK,&INFO);
             
-            cout << "eigenvalues of M: \n";
+            /*cout << "eigenvalues of M: \n";
             for(i=0;i<N;i++) cout << WR[i] << " ";
             cout << endl;
             cout << "eigenvectors\n";
             for(i=0;i<N;i++){
                 for(j=0;j<N;j++) cout << VR[j*N + i] << " ";
                 cout << endl;
-            }
+            }*/
             
             //find the largest eigenvalue and its corresponding eigenvector
             double maxEigen = WR[0] * WR[0];//want the maximum magnitude, don't care about the sign
@@ -254,7 +257,7 @@ int main(){
             double rmag = 0;
             for(i=0;i<N;i++) rmag += r[i] * r[i];
             rmag = sqrt(rmag);
-            cout << "rmag: " << rmag << endl;
+            //cout << "rmag: " << rmag << endl;
             if(rmag < 0.25){
                 cout << "finished!\n";
                 cout << "eigenvalue: " << WR[maxEigenLoc] << endl;
@@ -278,7 +281,6 @@ int main(){
                 }
             }
             
-            //(15)
             double C[N*N], D[N*N];
             cblas_dgemm(CblasColMajor,CblasNoTrans,CblasNoTrans,N,N,N,1,IminUU_lapack,N,AminTheta_lapack,N,0,C,N);
             /*cout << "matrix C: ";
@@ -291,14 +293,39 @@ int main(){
             
             int NRHS = 1;
             int IPIV[N];
-            //r goes in as the residue, comes out as the new eigenvector guess t
+            //negr goes in as the negative of the residue, comes out as the new eigenvector guess t
             for(i=0;i<N;i++) negr[i] = -r[i];
-            dgesv_(&size,&NRHS,D,&size,IPIV,negr,&size,&INFO);
-            cout << "new vector t: ";
+            //dgesv_(&size,&NRHS,D,&size,IPIV,negr,&size,&INFO);//LAPACK solves this equation, but with no ability to force the solution to be perpendicular to u
+            //for(i=0;i<N;i++) t[i] = negr[i];//negr is now actually the solution to the update equation
+            //Use GMRES instead
+            double tol = 1.e-6;
+            int result, maxit = 150, restart = 32;
+            double L[N][N], H[restart][restart];
+            double D_gmres[N][N];
+            for(i=0;i<N*N;i++) D_gmres[i%N][(i - i % N) / N] = D[i];
+            
+            for(i=0; i<N; i++){
+                for(j=0; j<N; j++){
+                    H[i][j] = 0.0;
+                    M[i][j] = delta(i,j);
+                }
+            }
+            
+            result = GMRES(D_gmres, t, negr, L, H, restart, maxit, tol);
+            
+            if(result == 1){
+                cout << "GMRES didn't work\n";
+                abort();
+            }
+            
+            /*cout << "new vector t: ";
             for(i=0;i<N;i++) cout << negr[i] << " ";
-            cout << endl;
-            for(i=0;i<N;i++) t[i] = negr[i];
+            cout << endl;*/
+            double tdotu = 0;
+            for(i=0;i<N;i++) tdotu += t[i] * u[i];
+            cout << "t * u: " << tdotu << endl;
+            
         }//(16)
-        for(i=0;i<N;i++) t[i] = u[i];//restart the whole process with v_0 as the latest value of u
+        //for(i=0;i<N;i++) t[i] = u[i];//restart the whole process with v_0 as the latest value of u
     }
 }
