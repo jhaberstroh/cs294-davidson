@@ -79,7 +79,7 @@ def JDLoop(A, m, v0, V, tol, verbose = False):
 	return la.norm(r), th, u, t
 
 
-def JDRound(A,v0, verbose = False):
+def JDRound(A,v0, maxM=0, verbose = False):
 	n = A.shape[0]
 	V = np.zeros((n,0))
 	if verbose:
@@ -90,7 +90,9 @@ def JDRound(A,v0, verbose = False):
 	m = 1
 
 	lam = 0
-	while err > tol and m <= n:
+	if maxM == 0:
+		maxM = n
+	while err > tol and m <= maxM:
 		err, lam, v0, perp = JDLoop(A,m,v0,V, tol)
 		err = err / m
 		V = np.append(V,perp,1)
@@ -105,7 +107,7 @@ def JDRound(A,v0, verbose = False):
 	return err, lam, v0
 	
 
-def JDRoutine(A, verbose = False):
+def JDRoutine(A, maxM = 0, maxRound = 10, verbose = False):
 	n = A.shape[0]
 	v0 = np.zeros((n,1))
 	for i in xrange(n):
@@ -116,9 +118,9 @@ def JDRoutine(A, verbose = False):
 	err = tol + 1
 	lam = 0
 	rounds = 0
-	while (err > tol and rounds < 10):
+	while (err > tol and rounds < maxRound):
 		print "Round ", rounds
-		err, lam, v0 = JDRound(A,v0,verbose)
+		err, lam, v0 = JDRound(A,v0, maxM, verbose)
 		rounds += 1
 
 
@@ -133,9 +135,22 @@ def main():
 	#JDRoutine(MT)
 	
 
+	#print "\n\n\n\n\n\n\nRandom large matrix:\n\n\n\n\n\n\n"
+	#random.seed(90210)
+	#N = 5
+	#MT = np.zeros((N,N))
+	#for i in xrange(200):
+	#	pos1 = random.randint(0,N-1)
+	#	pos2 = random.randint(0,N-1)
+	#	num = random.uniform(-1,1)
+	#	MT[pos1,pos2] = num
+	#	MT[pos2,pos1] = num
+	#JDRoutine(MT, 3, 10, False)
+	
+	
 	print "\n\n\n\n\n\n\nRandom large matrix:\n\n\n\n\n\n\n"
 	random.seed(90210)
-	N = 5
+	N = 25
 	MT = np.zeros((N,N))
 	for i in xrange(200):
 		pos1 = random.randint(0,N-1)
@@ -143,7 +158,7 @@ def main():
 		num = random.uniform(-1,1)
 		MT[pos1,pos2] = num
 		MT[pos2,pos1] = num
-	JDRoutine(MT, False)
+	JDRoutine(MT, 3, 100, False)
 
 	
 if __name__ == "__main__":
