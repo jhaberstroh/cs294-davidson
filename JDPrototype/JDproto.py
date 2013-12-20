@@ -9,7 +9,6 @@ import copy
 
 #	Returns approximate (err, eval, evec, perp) for the m x m submatrix of A
 def JDLoop(A, m, perp, V, tol, verbose = False):
-	print "m =",m
 	assert(type(A) == type(np.zeros(1)))
 	assert(type(perp) == type(np.zeros(1)))
 	n = A.shape[0]
@@ -22,21 +21,18 @@ def JDLoop(A, m, perp, V, tol, verbose = False):
 		perp = copy.copy(t)
 		#print "\tT0:",t
 		for i in xrange(m-1):
-			print "\tDot product vm * vi for i=",i,"is (before removal): ",np.dot(V[:,i],perp[:,0],)
-			#print "\tVECT:", V[:,i]
-
 			t[:,0] -= (np.dot(V[:,i].T,t[:,0]) * V[:,i])
-			print "\tDot product t  * vi for i=",i,"is (after removal):  ",np.dot(V[:,i],t[:,0].T,)
 		#print "\tTF:", t
 		#print "Norm v0, iteration",m,":",la.norm(v0)
 		#print "Norm t:",la.norm(t)
 		k = la.norm(t) / la.norm(perp)
-		print "\t\tOrthogonalization rescale kappa: ", k
+		if verbose:
+			print "\t\tOrthogonalization rescale kappa: ", k
 	perp= copy.copy(t)
 	perp /= la.norm(t)
 	vm = perp
 	for i in xrange(m-1):
-		print "\t\tPOST Dot product t  * vi for i=",i,"is:  ",np.dot(t[:,0].T,V[:,i])
+		assert(np.dot(t[:,0].T,V[:,i]) < 1e-10)
 
 	V = np.append(V,perp,1)
 
@@ -60,25 +56,14 @@ def JDLoop(A, m, perp, V, tol, verbose = False):
 
 	#print MAT.shape, r.shape
 	x, info = sla.minres(MAT,-r)
-	if verbose:
-		print "A:"
-		print A
-		print "r:"
-		print r
-		print "x:"
-		print x
 	
 	t = x
 	t /= la.norm(t)
 	t.shape = (n,1)
 
 	if verbose:
-		print "PAPt = ",np.dot(P, np.dot(A2, np.dot(P, t)))
-		print "U: ", u
-		print "T: ", t
-		print "R: ", r
-	print "\t\t\t residual", la.norm(r)
-	print "\t\t\t t dot u: ", np.dot(t.T,u)
+		print "\t\t\t residual", la.norm(r)
+		print "\t\t\t t dot u: ", np.dot(t.T,u)
 	#assert(np.dot(t.T,u) <= 1e-5)
 
 	return la.norm(r), th, u, t, vm
@@ -104,10 +89,7 @@ def JDRound(A,v0, maxM=0, verbose = False):
 	if maxM == 0:
 		maxM = n
 	while err > tol and m <= maxM:
-		x = JDLoop(A,m,perp,V, tol)
-		print "LENGTH OF X:", len(x)
 		err, lam, v0, perp, vm = JDLoop(A,m,perp,V, tol)
-		err = err / m
 		V = np.append(V,vm,1)
 		if verbose:
 			print "Guess",m,", error,",err,":::"
