@@ -40,13 +40,13 @@ int delta(int i, int j){
 int main(){
     int i, j;
     int LWORK = 2*4*N, INFO;
-    double t[N], v[N][N], u[N], uA[N], r[N], A[N][N], M[N][N], M_lapack[N*N], vA[N][N], WR[N], WI[N], VL[N], VR[N*N], WORK[LWORK];
+    double t[N], v[N][N], u[N], uA[N], r[N], negr[N], A[N][N], M[N][N], M_lapack[N*N], vA[N][N], WR[N], WI[N], VL[N], VR[N*N], WORK[LWORK];
     double IminUU[N][N], IminUU_lapack[N*N], AminTheta[N][N], AminTheta_lapack[N*N];
     double tmag;
 
     //initialize the random matrix to substitute for an electronic structure Hamiltonian
-    //srand (time(NULL));
-    srand(12345);
+    srand (time(NULL));
+    //srand(12345);
     for(i=0; i<N; i++){
         for(j=0; j<N; j++){
             A[i][j] = rand() % 1000;
@@ -67,18 +67,20 @@ int main(){
         t[i] = rand() % 1000;
         //v[i][0] = t[i];
     }
-    tmag = 0;
-    for(j=0; j<N; j++) tmag += t[j] * t[j];
-    tmag = sqrt(tmag);
-    for(j=0;j<N;j++) t[j] = t[j] / tmag;
-    
-    cout << "Our random guess for the eigenvector: ";
-    for(i=0;i<N;i++) cout << t[i] << " ";
-    cout << endl;
     
     //iterate the whole process
-    int maxIter = 1;
+    int maxIter = 10000;
     for(int iter = 0; iter<maxIter; iter++){
+        tmag = 0;
+        for(j=0; j<N; j++) tmag += t[j] * t[j];
+        tmag = sqrt(tmag);
+        for(j=0;j<N;j++) t[j] = t[j] / tmag;
+        tmag = 1;
+        
+        cout << "Our initial guess for the eigenvector: ";
+        for(i=0;i<N;i++) cout << t[i] << " ";
+        cout << endl;
+        
         //reset the list of guesses, v, and the matrix M to zero at the beginning of each iteration
         for(i=0;i<N;i++){
             for(j=0;j<N;j++){
@@ -86,39 +88,61 @@ int main(){
                 v[i][j] = 0;
             }
         }
-        //cout << "iter: " << iter << endl;
+        cout << "iter: " << iter << endl;
         //(2)
+        double vmag;
         for(int m=1; m<=N; m++){
-            cout << "t: ";
+            /*cout << "t: ";
             for(i=0;i<N;i++) cout << t[i] << " ";
-            cout << endl;
+            cout << endl;*/
+            //for(j=0; j<N; j++) t[j] = rand() % 1000; cout << "v's are set randomly. Testing orthogonalization\n"; This test succeeds
             for(j=0; j<N; j++) v[j][m-1] = t[j];
             //(3) - orthogonalization
-            for(i=1; i<m; i++){
-                //(4)
-                double vt = 0;
-                for(j=0; j<N; j++) vt += v[j][i-1] * t[j];
-                cout << "vt: " << vt << endl;
-                for(j=0; j<N; j++) v[j][m-1] -= vt * v[j][i-1];
-            }//(5)
-            //normalization
-            tmag = 0;
-            for(j=0; j<N; j++) tmag += v[j][m-1] * v[j][m-1];
-            tmag = sqrt(tmag);
-            for(j=0;j<N;j++) v[j][m-1] = v[j][m-1] / tmag;
-           
-            cout << "orthonormalized t: ";
-            for(i=0;i<N;i++) cout << v[i][m-1] << " ";
-            cout << endl;
+            int a = 0;
+            double ratio = 0;
+            while(ratio < 0.25){
+                if(a > 0) cout << "Repeating Gram-Schmidt\n";
+                cout << "vector before orthogonalization: ";
+                for(i=0; i<N; i++) cout << v[i][m-1] << " ";
+                cout << endl;
+                for(i=1; i<m; i++){
+                    //(4)
+                    double vt = 0;
+                    for(j=0; j<N; j++) vt += v[j][i-1] * t[j];
+                    //cout << "vt: " << vt << endl;
+                    for(j=0; j<N; j++) v[j][m-1] -= vt * v[j][i-1];
+                    cout << "after orthogonalizing to vector " << i-1 << endl;
+                    for(j=0; j<N; j++) cout << v[j][m-1] << " ";
+                    cout << endl;
+                }//(5)
+                vmag = 0;
+                for(i=0;i<N;i++) vmag += v[i][m-1] * v[i][m-1];
+                vmag = sqrt(vmag);
+                ratio = vmag / tmag; //repeat orthogonalization one time if the vector gets smaller by more than a factor of 4
+                cout << "ratio: " << ratio << endl;
+                a++;
+                //normalization
+                vmag = 0;
+                for(j=0; j<N; j++) vmag += v[j][m-1] * v[j][m-1];
+                vmag = sqrt(vmag);
+                for(j=0;j<N;j++) v[j][m-1] = v[j][m-1] / vmag;
+                for(i=0;i<N;i++) t[i] = v[i][m-1];
+                
+                tmag = 0;
+                for(j=0; j<N; j++) tmag += t[j] * t[j];
+                tmag = sqrt(tmag);
+            }
             
-
-            if(tmag == 0){
-                cout << "Your eigenvector guess is the null vector.";
+           
+            if(vmag <= 10e-10){
+                cout << "Your eigenvector guess is the null vector.\n";
                 abort();
             }
-             //(6)
             
-            
+            /*cout << "orthonormalized t: ";
+            for(i=0;i<N;i++) cout << v[i][m-1] << " ";
+            cout << endl;*/
+
             //check the new vector
             cout << "v's\n";
             for(i=0; i<N; i++){
@@ -128,30 +152,34 @@ int main(){
                 cout << endl;
             }
             
-            double vm[N], vAm[N];
+            //(6)
+            double vm[N], vAm[N]={0};
             for(i=0;i<N;i++) vm[i] = v[i][m-1];
             matrixVectorMultiply(A, vm, vAm);
             for(i=0;i<N;i++) vA[i][m-1] = vAm[i];
             
-            /*cout << "vector vA: ";
-            for(i=0;i<3;i++) cout << vA[i][m-1] << " ";
-            cout << endl;*/
-            //(7)
-            for(i=1;i<=m;i++){
-                //(8)
-                M[i-1][m-1] = 0;
+            cout << "matrix vA\n";
+            for(i=0;i<N;i++){
                 for(j=0;j<N;j++){
-                    M[i-1][m-1] += v[j][i-1] * vA[m-1][j];
+                    cout << vA[i][j] << " ";
+                }
+                cout << endl;
+            }
+        
+            for(i=1;i<=m;i++){ //(7)
+                for(j=0;j<N;j++){
+                    M[i-1][m-1] += v[j][i-1] * vA[j][m-1]; //(8)
+                    if(i != m) M[m-1][i-1] += v[j][i-1] * vA[j][m-1]; //It's Hermitian!
                 }
             }//(9)
             
-            /*cout << "matrix M\n";
+            cout << "matrix M\n";
             for(i=0;i<N;i++){
                 for(j=0;j<N;j++){
                     cout << M[i][j] << " ";
                 }
                 cout << endl;
-            }*/
+            }
             
             //(10) calculate largest eigenpair of M with LAPACK
             char left = 'N';
@@ -166,14 +194,14 @@ int main(){
             //right eigenvectors are stored in the columns of VR in the same order as the corresponding eigevanlues in WR and WI (real,imaginary)
             dgeev_(&left,&right,&size,M_lapack,&size,WR,WI,VL,&LDVL,VR,&size,WORK,&LWORK,&INFO);
             
-            /*cout << "eigenvalues\n";
+            cout << "eigenvalues of M: \n";
             for(i=0;i<N;i++) cout << WR[i] << " ";
             cout << endl;
             cout << "eigenvectors\n";
             for(i=0;i<N;i++){
                 for(j=0;j<N;j++) cout << VR[j*N + i] << " ";
                 cout << endl;
-            }*/
+            }
             
             //find the largest eigenvalue and its corresponding eigenvector
             double maxEigen = WR[0] * WR[0];//want the maximum magnitude, don't care about the sign
@@ -189,6 +217,10 @@ int main(){
                 }
             }
             //cout << "maxEigenLoc: " << maxEigenLoc << endl;
+            //maxEigenLoc = m-1;
+            /*cout << "vector s: ";
+            for(i=0;i<N;i++) cout << VR[maxEigenLoc * N + i] << " ";
+            cout << endl;*/
             
             //(11)
             for(i=0;i<N;i++){
@@ -260,11 +292,13 @@ int main(){
             int NRHS = 1;
             int IPIV[N];
             //r goes in as the residue, comes out as the new eigenvector guess t
-            dgesv_(&size,&NRHS,D,&size,IPIV,r,&size,&INFO);
-            /*cout << "new vector t: ";
-            for(i=0;i<N;i++) cout << r[i] << " ";
-            cout << endl;*/
-            for(i=0;i<N;i++) t[i] = r[i];
+            for(i=0;i<N;i++) negr[i] = -r[i];
+            dgesv_(&size,&NRHS,D,&size,IPIV,negr,&size,&INFO);
+            cout << "new vector t: ";
+            for(i=0;i<N;i++) cout << negr[i] << " ";
+            cout << endl;
+            for(i=0;i<N;i++) t[i] = negr[i];
         }//(16)
+        for(i=0;i<N;i++) t[i] = u[i];//restart the whole process with v_0 as the latest value of u
     }
 }
