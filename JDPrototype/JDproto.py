@@ -1,12 +1,17 @@
 import numpy as np
 import scipy.linalg as la
+import scipy.linalg.lapack as lapack
+import scipy.sparse.linalg as sla
 import scipy as sp
 import random
 import copy
+from pysparse.itsolvers import krylov
+from pysparse.sparse import spmatrix
 
 
 #	Returns approximate (err, eval, evec, perp) for the m x m submatrix of A
-def JDLoop(A, m, v0, V):
+def JDLoop(A, m, v0, V, tol, verbose = False):
+	print "m =",m
 	assert(type(A) == type(np.zeros(1)))
 	assert(type(v0) == type(np.zeros(1)))
 	n = A.shape[0]
@@ -14,12 +19,19 @@ def JDLoop(A, m, v0, V):
 	assert(V.shape[0] == n and V.shape[1] == m-1)
 	
 	t = copy.copy(v0)
-	for i in xrange(m-1):
-		t[:,0] -= np.dot(v0[:,0],V[:,i]) * V[:,i]
-	#print "Norm v0, iteration",m,":",la.norm(v0)
-	#print "Norm t:",la.norm(t)
-	k = la.norm(t) / la.norm(v0)
-	#print "Orthogonalization rescale kappa: ", k
+	k = 0
+	while k < .25:
+		v0 = copy.copy(t)
+		#print "\tT0:",t
+		for i in xrange(m-1):
+			#print np.dot(v0[:,0],V[:,i])
+			#print "\tVECT:", V[:,i]
+			t[:,0] -= np.dot(v0[:,0].T,V[:,i]) * V[:,i]
+		#print "\tTF:", t
+		#print "Norm v0, iteration",m,":",la.norm(v0)
+		#print "Norm t:",la.norm(t)
+		k = la.norm(v0) / la.norm(t)
+		#print "Orthogonalization rescale kappa: ", k
 	v0 = t / la.norm(t)
 
 	Vm = np.append(V,v0,1)
@@ -32,14 +44,39 @@ def JDLoop(A, m, v0, V):
 	#print "S shape:", s.shape
 	u = np.dot(Vm,s)
 	r = np.dot(A, np.dot(Vm, s)) - th * u
+	if la.norm(r) < tol:
+		return la.norm(r), th, u, t
 
 	diag = A.diagonal()
 	diag.shape = (n,1)
 	#print "A diag: ",diag
-	t = (1/(diag-th)) * r
+	I = np.eye(n)
+	P = I - np.dot(u, u.T)
+	A2 = A - (th * I)
+	MAT = np.dot(P, np.dot(A2,P))
+
+	#print MAT.shape, r.shape
+	x, info = sla.minres(MAT,-r)
+	if verbose:
+		print "A:"
+		print A
+		print "r:"
+		print r
+		print "x:"
+		print x
+	
+	t = x
 	t /= la.norm(t)
-	#print "R: ", r
-	#print "T: ", t
+	t.shape = (n,1)
+
+	if verbose:
+		print "PAPt = ",np.dot(P, np.dot(A2, np.dot(P, t)))
+		print "U: ", u
+		print "T: ", t
+		print "R: ", r
+	print "\t\t\t residual", la.norm(r)
+	print "\t\t\t t dot u: ", np.dot(t.T,u)
+	#assert(np.dot(t.T,u) <= 1e-5)
 
 	return la.norm(r), th, u, t
 
@@ -56,7 +93,7 @@ def JDRound(A,v0, verbose = False):
 
 	lam = 0
 	while err > tol and m <= n:
-		err, lam, v0, perp = JDLoop(A,m,v0,V)
+		err, lam, v0, perp = JDLoop(A,m,v0,V, tol)
 		err = err / m
 		V = np.append(V,perp,1)
 		if verbose:
@@ -88,19 +125,19 @@ def JDRoutine(A, verbose = False):
 
 
 def main():
-	random.seed(8675309)
-	MT = np.zeros((3,3))
-	MT[0,0] = 1
-	MT[1,0] = -1
-	MT[0,1] = -1
-	MT[1,1] = 1
-	MT[2,2] = 2
-	JDRoutine(MT)
+	#random.seed(8675309)
+	#MT = np.zeros((3,3))
+	#MT[0,0] = 1
+	#MT[1,0] = -1
+	#MT[0,1] = -1
+	#MT[1,1] = 1
+	#MT[2,2] = 2
+	#JDRoutine(MT)
 	
 
 	print "\n\n\n\n\n\n\nRandom large matrix:\n\n\n\n\n\n\n"
 	random.seed(90210)
-	N = 25
+	N = 5
 	MT = np.zeros((N,N))
 	for i in xrange(200):
 		pos1 = random.randint(0,N-1)
