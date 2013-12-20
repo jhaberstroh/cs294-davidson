@@ -7,6 +7,7 @@
 #include "gmres.h"
 
 #define N 3
+#define restart 32
 
 using namespace std;
 
@@ -299,7 +300,7 @@ int main(){
             //for(i=0;i<N;i++) t[i] = negr[i];//negr is now actually the solution to the update equation
             //Use GMRES instead
             double tol = 1.e-6;
-            int result, maxit = 150, restart = 32;
+            int result, maxit = 150, rstrt = restart;
             double L[N][N], H[restart][restart];
             double D_gmres[N][N];
             for(i=0;i<N*N;i++) D_gmres[i%N][(i - i % N) / N] = D[i];
@@ -311,7 +312,7 @@ int main(){
                 }
             }
             
-            result = GMRES(D_gmres, t, negr, L, H, restart, maxit, tol);
+            result = GMRES(D_gmres, t, negr, L, H, rstrt, maxit, tol);
             
             if(result == 1){
                 cout << "GMRES didn't work\n";
