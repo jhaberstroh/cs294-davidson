@@ -65,7 +65,7 @@ void LargeMatrix::GenerateRandom(std::string a_filename, int a_num_rows, int a_i
 
 
 
-void LargeMatrix::TxtMult(colVect& output, const colVect& arg)
+void LargeMatrix::TxtMult(colVect& output, const colVect& arg) const
 	{
 
 		CH_TIMERS("Multiplication");
@@ -102,7 +102,7 @@ void LargeMatrix::TxtMult(colVect& output, const colVect& arg)
 		mtx_file.close();
 	}
 
-void LargeMatrix::BinMult(colVect& output, const colVect& arg)
+void LargeMatrix::BinMult(colVect& output, const colVect& arg) const
 	{
 		CH_TIMERS("Multiplication");
 		CH_TIMER("file_read", t1);
@@ -115,7 +115,7 @@ void LargeMatrix::BinMult(colVect& output, const colVect& arg)
 		//std::cout << "MATRIX LOADING: " << std::endl;
 	
 		int Nchar_double = 8;
-		assert(m_num_rows = 25*25);
+		assert(m_num_rows == 25*25);
 		int line_size = m_num_rows * Nchar_double;
 		char buffer[line_size + 1];
 		for (int i = 0 ; i < m_num_rows ; i++)
@@ -164,7 +164,7 @@ void LargeMatrix::BinMult(colVect& output, const colVect& arg)
 		mtx_file.close();
 	}
 
-void LargeMatrix::OptMult(colVect& output, const colVect& arg)
+void LargeMatrix::OptMult(colVect& output, const colVect& arg) const
 	{
 		CH_TIMERS("Multiplication");
 		CH_TIMER("trivial", t0);
@@ -257,7 +257,7 @@ void LargeMatrix::OptMult(colVect& output, const colVect& arg)
 		mtx_file.close();
 	}
 
-colVect LargeMatrix::operator*(colVect arg)
+colVect LargeMatrix::operator*(colVect arg) const
 	{
 		assert(arg.size() == m_num_rows);
 		colVect dot(arg.size(), 0);

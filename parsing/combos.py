@@ -3,12 +3,23 @@
 
 import os, sys, argparse 
 
+
+# Just a little helper routine, to be used later
+def diffList(lst1,lst2):
+    returnList=[]
+    for elem in lst1:
+	if elem not in lst2: returnList.append(elem)
+    for elem in lst2:
+	if elem not in lst1: returnList.append(elem)
+    return returnList
+
+
 # Tell the parser which file you're using and how many basis functions.
 # The number of basis functions could be read using regular expressions,
 # but that's some voodoo shit.
 parser = argparse.ArgumentParser(description='Parses output from Psi4 SCF computation into a 2-D square matrix')
-parser.add_argument('-i',type=str,nargs=1,help='The file containing the printed output from Psi4')
-parser.add_argument('-b',default=[25],type=int,nargs=1,help='Number of basis functions')
+parser.add_argument('-i',required=True,type=str,nargs=1,help='The file containing the printed output from Psi4')
+parser.add_argument('-b',required=True,default=[25],type=int,nargs=1,help='Number of basis functions (could be read from output, Psi4 file, but it\'s easeir this way.')
 
 args = parser.parse_args()
 
@@ -23,14 +34,6 @@ import scipy as sc
 K=1
 N=2
 
-# Just a little helper routine, to be used later
-def diffList(lst1,lst2):
-    returnList=[]
-    for elem in lst1:
-	if elem not in lst2: returnList.append(elem)
-    for elem in lst2:
-	if elem not in lst1: returnList.append(elem)
-    return returnList
 
 hSpat = np.zeros((K,K))
 hSpin = np.zeros((2*K,2*K))
