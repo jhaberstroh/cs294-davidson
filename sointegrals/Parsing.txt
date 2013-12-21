@@ -1,0 +1,9 @@
+We are going to want the OEIs stored in a matrix H_ij, and leave the TEIs stored as a 4d array (ij|kl)
+
+These get built into the Full-CI Matrix in a really janky way, but in principle it can be done. I have all
+of the matrix elements in terms of the OEIs and TEIs.
+
+The Full-CI matrix is going to be (2K choose N) x (2K choose N) in size. Here, 2K=14 and N=10, so 1001 x 1001.
+
+I am going to try to write code that outputs a Full-CI matrix for arbitrary K and N, but I might give up and just
+focus on this specific case.
