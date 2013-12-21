@@ -3,17 +3,15 @@
 
 import os, sys, argparse 
 
-# Tell the parser which file you're using and how many basis functions.
-# The number of basis functions could be read using regular expressions,
-# but that's some voodoo shit.
-parser = argparse.ArgumentParser(description='Parses output from Psi4 SCF computation into a 2-D square matrix')
-parser.add_argument('-b',default=[25],type=int,nargs=1,help='Number of basis functions')
 
-args = parser.parse_args()
-
-numBas = args.b[0]
-
-
+# Just a little helper routine, to be used later
+def diffList(lst1,lst2):
+    returnList=[]
+    for elem in lst1:
+	if elem not in lst2: returnList.append(elem)
+    for elem in lst2:
+	if elem not in lst1: returnList.append(elem)
+    return returnList
 
 from itertools import combinations
 import numpy as np

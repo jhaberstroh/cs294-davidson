@@ -65,9 +65,9 @@ class LargeMatrix
 		int m_num_rows;
 		Format m_fmt;
 
-		void TxtMult(colVect& output, const colVect& in);
-		void BinMult(colVect& output, const colVect& in);
-		void OptMult(colVect& output, const colVect& in);
+		void TxtMult(colVect& output, const colVect& in) const;
+		void BinMult(colVect& output, const colVect& in) const;
+		void OptMult(colVect& output, const colVect& in) const;
 
 
 	public: 
@@ -76,7 +76,8 @@ class LargeMatrix
 		static int EstimateMaxSize(int a_num_rows);
 		static void GenerateRandom(std::string a_filename, int a_num_rows, int a_ioflags = FWrite|Overwrite);
 
-		colVect operator*(colVect vec);
+		colVect operator*(colVect vec) const;
+		int size() const{ return m_num_rows; }
 
 };
 
