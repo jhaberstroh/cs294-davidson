@@ -7,32 +7,26 @@ import os, sys, argparse
 # The number of basis functions could be read using regular expressions,
 # but that's some voodoo shit.
 parser = argparse.ArgumentParser(description='Parses output from Psi4 SCF computation into a 2-D square matrix')
-parser.add_argument('-i',type=str,nargs=1,help='The file containing the printed output from Psi4')
 parser.add_argument('-b',default=[25],type=int,nargs=1,help='Number of basis functions')
 
 args = parser.parse_args()
 
 numBas = args.b[0]
-filename = args.i[0]
 
 
 
 from itertools import combinations
 import numpy as np
 import scipy as sc
-K=1
-N=2
+K=7
+N=10
 
-# Just a little helper routine, to be used later
-def diffList(lst1,lst2):
-    returnList=[]
-    for elem in lst1:
-	if elem not in lst2: returnList.append(elem)
-    for elem in lst2:
-	if elem not in lst1: returnList.append(elem)
-    return returnList
 
+# Import full energy from file
+import read_integrals as readints 
 hSpat = np.zeros((K,K))
+readints.make_h("OEI_MO2.dat",hSpat,K)
+
 hSpin = np.zeros((2*K,2*K))
 # Going from spatial to spin OEIs is easy; < a | b > = 0
 for i in range(0,K):
@@ -40,8 +34,14 @@ for i in range(0,K):
 	hSpin[2*i,2*j] = hSpat[i,j]
 	hSpin[2*i+1,2*j+1] = hSpat[i,j]
 
-# Going from spation to spin TEIs
+
 teiSpat = np.zeros((K,K,K,K))
+
+#####################
+# readints.make_teis('output.dat',teiSpat,K)
+#####################
+
+# Going from spatial to spin TEIs
 teiSpin = np.zeros((2*K,2*K,2*K,2*K))
 for i in range(0,K):
     for j in range(0,K):
@@ -89,6 +89,16 @@ for det in determinants:
 # Scipy fail...
 FullCIMatrix = np.zeros((Ndet,Ndet))
 print "Number of determinants: "+str(Ndet)
+
+
+# Just a little helper routine, to be used below
+def diffList(lst1,lst2):
+    returnList=[]
+    for elem in lst1:
+	if elem not in lst2: returnList.append(elem)
+    for elem in lst2:
+	if elem not in lst1: returnList.append(elem)
+    return returnList
 
 # SINGLE ELECTRON OPERATOR, diagonals
 for i in range(0,Ndet):
