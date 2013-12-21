@@ -2,7 +2,7 @@
 
 
 import os, sys, argparse 
-
+import struct
 
 # Just a little helper routine, to be used later
 def diffList(lst1,lst2):
@@ -17,14 +17,14 @@ def diffList(lst1,lst2):
 # Tell the parser which file you're using and how many basis functions.
 # The number of basis functions could be read using regular expressions,
 # but that's some voodoo shit.
-parser = argparse.ArgumentParser(description='Parses output from Psi4 SCF computation into a 2-D square matrix')
-parser.add_argument('-i',required=True,type=str,nargs=1,help='The file containing the printed output from Psi4')
-parser.add_argument('-b',required=True,default=[25],type=int,nargs=1,help='Number of basis functions (could be read from output, Psi4 file, but it\'s easeir this way.')
+#parser = argparse.ArgumentParser(description='Parses output from Psi4 SCF computation into a 2-D square matrix')
+#parser.add_argument('-i',required=True,type=str,nargs=1,help='The file containing the printed output from Psi4')
+#parser.add_argument('-b',required=True,default=[25],type=int,nargs=1,help='Number of basis functions (could be read from output, Psi4 file, but it\'s easeir this way.')
 
-args = parser.parse_args()
-
-numBas = args.b[0]
-filename = args.i[0]
+#args = parser.parse_args()
+#
+#numBas = args.b[0]
+#filename = args.i[0]
 
 
 
@@ -175,10 +175,14 @@ for i in range(0,Ndet):
 ### FullCIMatrix is now done.
 ##   Dump to file.#
 
+print "Full CI Matrix dimensions:",FullCIMatrix.shape
 file_out = "derpitydoo.dat"
 with open(file_out,'wb') as f2:
+	f2.write("MOformat_");
+
+	f2.write(struct.pack('I',FullCIMatrix.shape[0]));
+	f2.write(struct.pack('I',8));
 	for i in xrange(0,Ndet):
 		for j in xrange(0,Ndet):
-			f2.write(FullCIMatrix[i,j])
-		f2.write('\n')
+			f2.write(struct.pack('d',FullCIMatrix[i,j]))
 
