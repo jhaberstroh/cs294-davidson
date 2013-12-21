@@ -7,6 +7,9 @@
 #include <vector>
 #include <cmath>
 #include <lapacke.h>
+#include "LargeTminres.H"
+#include "tminres.hpp"
+#include "SimpleVector.hpp"
 
 #define RESTART 5
 #define MAXROUND 10
@@ -47,6 +50,7 @@ Real normalize(int size, Vector& v)
 			}
 	
 	}
+
 
 
 template <class Vector>
@@ -99,18 +103,9 @@ void JDLoop(const Matrix& A, int m, Vector& perp, std::vector<Vector>& V, Vector
 		int result = LAPACKE_dsyev(LAPACK_ROW_MAJOR,'V','U', size_mtx, M, m, eig_vals);
 
 		int max_index = m-1;
-		
-		//if (-eig_vals[0] > eig_vals[m-1])
-		//	{
-		//		max_index = 0;
-		//	}
-		//else
-		//	{
-		//		max_index = m-1;
-		//	}
 
-		std::cout << "Eigenval"<<max_index<<": " << eig_vals[max_index]<<std::endl;
-		std::cout << std::endl;
+		//std::cout << "Eigenval"<<max_index<<": " << eig_vals[max_index]<<std::endl;
+		//std::cout << std::endl;
 
 		eig_val = eig_vals[max_index];
 		Real* max_evec = M + (m * max_index);
@@ -129,14 +124,33 @@ void JDLoop(const Matrix& A, int m, Vector& perp, std::vector<Vector>& V, Vector
 			}
 
 		Vector r = A * eig_vec;
+		SimpleVector res_simple(n);
+		SimpleVector perp_simple(n);
 		for (int i = 0 ; i < n ; i++)
 			{
 				r[i] -= eig_vec[i] * eig_val;
+				res_simple[i] = r[i];
+				perp_simple[i] = 0;
 			}
 
 		std::cout << "Residue norm: " << norm(n,r) << std::endl;
 
+		LargeMtxProjectionOperator op(A,eig_vec);
+		Preconditioner * prec = NULL;
 
+		double shift(0);
+		int max_iter(1000);
+		double tol(1e-6);
+		bool show(false);
+	
+		MINRES(op, perp_simple, res_simple, prec, shift, max_iter, tol, show);
+
+		for (int i = 0 ; i < n ; i++)
+			{
+				perp[i] = perp_simple[i];
+			}
+
+		std::cout << "\t\t\tt dot u: " << dot(n,perp,eig_vec) <<std::endl;
 	}
 
 
