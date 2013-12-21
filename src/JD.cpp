@@ -11,9 +11,6 @@
 #include <Accelerate/Accelerate.h>
 #endif 
 
-#include MATRIX_H
-#include "lib/iml++/gmres.h"
-#include "compcol_double.h"
 
 #define N 3
 #define restart 32
@@ -328,12 +325,11 @@ int main(){
             
 						result = 1;
 
-						std::vector<double> t_vec;
-						std::vector<double> b_vec;
 
-            result = GMRES(D_gmres, t_vec, b_vec, L, H, rstrt, maxit, tol);
+            //result = GMRES(D_gmres, t_vec, b_vec, L, H, rstrt, maxit, tol);
             //result = GMRES(D_gmres, t, negr, L, H, rstrt, maxit, tol);
 
+						result = 1;
             
             if(result == 1){
                 cout << "GMRES didn't work\n";

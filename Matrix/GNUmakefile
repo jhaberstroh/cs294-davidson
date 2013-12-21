@@ -1,7 +1,7 @@
 #our makefile variables.   Good to place commonly changed variables
 # at the top of your makefile. Then follow with your rules.
 HOME = ..
-VPATH= . $(HOME) $(HOME)/lib/timer $(HOME)/lib/tminres-0.2/ $(HOME)/lib/tminres-0.2/SerialExample
+VPATH= . $(HOME) $(HOME)/lib/timer $(HOME)/lib/tminres-0.2/ 
 # DIM=2
 # osuffix:=$(DIM)D.o
 # dsuffix:=$(DIM)D.d
@@ -40,10 +40,10 @@ OBJS:=$(patsubst %.cpp,%.o, $(SRCFILES))
 # ../lib/libfft%D.a:$(wildcard $(HOME)/../fftTools/*.H $(HOME)/fftTools/../*.cpp)
 # 	cd $(HOME)/../fftTools;make DIM=$*
 
-LargeMatrix: mtxmain.o GNUmakefile $(OBJS)
+LargeMatrix: main/mtxmain.o GNUmakefile $(OBJS)
 	$(CXX) $(CFLAGS) -o $@ $< $(OBJS) $(LIBS) 
 
-grTest: gmres_test.o GNUmakefile $(OBJS)
+grTest: main/gmres_test.o GNUmakefile $(OBJS)
 	$(CXX) $(CFLAGS) -o $@ $< $(OBJS) $(LIBS) 
 
 clean:
