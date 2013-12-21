@@ -13,6 +13,7 @@
 
 #include MATRIX_H
 #include "lib/iml++/gmres.h"
+#include "compcol_double.h"
 
 #define N 3
 #define restart 32
