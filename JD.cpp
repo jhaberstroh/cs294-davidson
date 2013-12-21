@@ -1,15 +1,18 @@
-//g++ -framework Accelerate JD.cpp
+//g++ -framework Accelerate -DMACINTOSH_OS JD.cpp
 //Follows the algorithm here: http://web.eecs.utk.edu/~dongarra/etemplates/node138.html
 #include <iostream>
 #include <vector>
 #include <cmath>
 #include <stdlib.h>
-#include <cblas.h>
-#include <lapacke.h>
 
 #ifdef MACINTOSH_OS
 #include <Accelerate/Accelerate.h>
 #endif 
+
+#ifndef MACINTOSH_OS
+#include <cblas.h>
+#include <lapacke.h>
+#endif
 
 #include MATRIX_H
 #include "lib/iml++/gmres.h"
