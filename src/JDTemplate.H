@@ -11,7 +11,7 @@
 #include "tminres.hpp"
 #include "SimpleVector.hpp"
 
-#define RESTART 5
+#define RESTART 10
 #define MAXROUND 10
 #define VERBOSE false
 #define TOL 1e-6

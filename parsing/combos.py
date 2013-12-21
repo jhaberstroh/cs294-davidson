@@ -2,7 +2,7 @@
 
 
 import os, sys, argparse 
-
+import struct
 
 # Just a little helper routine, to be used later
 def diffList(lst1,lst2):
@@ -180,10 +180,14 @@ for i in range(0,Ndet):
 ### FullCIMatrix is now done.
 ##   Dump to file.#
 
+print "Full CI Matrix dimensions:",FullCIMatrix.shape
 file_out = "derpitydoo.dat"
 with open(file_out,'wb') as f2:
+	f2.write("MOformat_");
+
+	f2.write(struct.pack('I',FullCIMatrix.shape[0]));
+	f2.write(struct.pack('I',8));
 	for i in xrange(0,Ndet):
 		for j in xrange(0,Ndet):
-			f2.write(FullCIMatrix[i,j])
-		f2.write('\n')
+			f2.write(struct.pack('d',FullCIMatrix[i,j]))
 

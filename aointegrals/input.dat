@@ -16,13 +16,14 @@ A = 104.5
 set {
   basis sto-3g
   PRINT_MOS = True
+  PRINT_TEI = True
 }
 
 set aointegrals {
   print 1
 }
 
-energy('aointegrals')
-
+energy('scf')
+optimize('ccsd')
 aointegrals.exampleFN()
 
