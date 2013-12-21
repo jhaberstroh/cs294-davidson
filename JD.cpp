@@ -116,25 +116,25 @@ int main(){
             double ratio = 0;
             //while(ratio < 0.25){
             for(a=0; a<2; a++){
-                if(a > 0) cout << "Repeating Gram-Schmidt\n";
+                //if(a > 0) cout << "Repeating Gram-Schmidt\n";
                 /*cout << "vector before orthogonalization: ";
                 for(i=0; i<N; i++) cout << v[i][m-1] << " ";
                 cout << endl;*/
                 for(i=1; i<m; i++){
                     //cout << "vector I'm orthogonalizing: "; for(j=0; j<N; j++) cout << v[j][m-1] << " "; cout << endl;
                     //cout << "vector I'm orthogonalizing to: "; for(j=0; j<N; j++) cout << v[j][i-1] << " "; cout << endl;
-                    double dotProd = 0;
+                    /*double dotProd = 0;
                     for(j=0; j<N; j++) dotProd += v[j][m-1] * v[j][i-1];
-                    cout << "Dot product before orthogonalization: " << dotProd << endl;
+                    cout << "Dot product before orthogonalization: " << dotProd << endl;*/
                     //(4)
                     double vt = 0;
                     for(j=0; j<N; j++) vt += v[j][i-1] * t[j];
                     //cout << "vt: " << vt << endl;
                     for(j=0; j<N; j++) v[j][m-1] -= vt * v[j][i-1];
                     //cout << "after orthogonalizing to vector " << i-1 << endl; for(j=0; j<N; j++) cout << v[j][m-1] << " "; cout << endl;
-                    dotProd = 0;
+                    /*dotProd = 0;
                     for(j=0; j<N; j++) dotProd += v[j][m-1] * v[j][i-1];
-                    cout << "Dot product after orthogonalization: " << dotProd << endl;
+                    cout << "Dot product after orthogonalization: " << dotProd << endl;*/
                 }//(5)
                 vmag = 0;
                 for(i=0;i<N;i++) vmag += v[i][m-1] * v[i][m-1];
@@ -271,7 +271,7 @@ int main(){
             double rmag = 0;
             for(i=0;i<N;i++) rmag += r[i] * r[i];
             rmag = sqrt(rmag);
-            //cout << "rmag: " << rmag << endl;
+            cout << "rmag: " << rmag << endl;
             if(rmag < 0.25){
                 cout << "finished!\n";
                 cout << "eigenvalue: " << WR[maxEigenLoc] << endl;
