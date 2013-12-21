@@ -2,14 +2,27 @@
 //Follows the algorithm here: http://web.eecs.utk.edu/~dongarra/etemplates/node138.html
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include <stdlib.h>
+#include <cblas.h>
+#include <lapacke.h>
+
+#ifdef MACINTOSH_OS
 #include <Accelerate/Accelerate.h>
-#include "gmres.h"
+#endif 
+
+#include MATRIX_H
+#include "lib/iml++/gmres.h"
 
 #define N 3
 #define restart 32
 
+
 using namespace std;
+
+extern void dgeev( char* jobvl, char* jobvr, int* n, double* a, 
+									 int* lda, double* wr, double* wi, double* vl, int* ldvl, 
+									 double* vr, int* ldvr, double* work, int* lwork, int* info );
 
 void matrixVectorMultiply(double matrix[][N], double vector[], double result[]){
     int i,j;
@@ -312,7 +325,14 @@ int main(){
                 }
             }
             
-            result = GMRES(D_gmres, t, negr, L, H, rstrt, maxit, tol);
+						result = 1;
+
+						std::vector<double> t_vec;
+						std::vector<double> b_vec;
+
+            result = GMRES(D_gmres, t_vec, b_vec, L, H, rstrt, maxit, tol);
+            //result = GMRES(D_gmres, t, negr, L, H, rstrt, maxit, tol);
+
             
             if(result == 1){
                 cout << "GMRES didn't work\n";
