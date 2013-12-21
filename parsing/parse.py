@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import re
 import numpy as np
+import struct
 
 import os, sys, argparse 
 
@@ -66,6 +67,7 @@ for l in arrayofeverything:
 # I have no idea how to store the matrix in memory.
 file_out = "matx_out_test.dat"
 print type(matrix[0,0])
+print matrix.shape[0]
 
 with open(file_out,'wb') as f2:
 	for i in xrange(0,N):
@@ -74,7 +76,20 @@ with open(file_out,'wb') as f2:
 		f2.write('\n')
 
 
+file_out = "matx_out_test.mot"
+with open(file_out,'wb') as f2:
+	f2.write('MOformat_')
+	f2.write(struct.pack('I',8));
+	f2.write(struct.pack('I',matrix.shape[0]));
+	f2.write('\n');
+	for i in xrange(0,N):
+		for j in xrange(0,N):
+			f2.write(struct.pack('d',matrix[i,j]))
 
+
+file_out = "test_bin.bin"
+with open(file_out,'wb') as f2:
+	f2.write(struct.pack('d',3.14159))
 
 
 #	for i in range(0,10):
